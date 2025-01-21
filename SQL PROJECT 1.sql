@@ -163,36 +163,22 @@ GROUP BY category
 
 --Q.10 write a sql query to create each shift and number of orders(example morning <<12 afternoon between 12 and 17, evening > 17)
 
-   
-	
-
-ALTER TABLE retail_sales
-ADD shift VARCHAR(20);
-
-
-UPDATE retail_sales
-SET shift = CASE 
-    WHEN sale_time < '12:00:00' THEN 'Morning'
-    WHEN sale_time >= '12:00:00' AND sale_time < '18:00:00' THEN 'Afternoon'
-    ELSE 'Evening'
-END;
-
-
+WITH hourly_sale
+AS
+(
+SELECT *,
+    CASE
+        WHEN EXTRACT(HOUR FROM sale_time) < 12 THEN 'Morning'
+        WHEN EXTRACT(HOUR FROM sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+        ELSE 'Evening'
+    END as shift
+FROM retail_sales
+)
 SELECT 
-    CASE 
-        WHEN sale_time < '12:00:00' THEN 'Morning'
-        WHEN sale_time >= '12:00:00' AND sale_time < '18:00:00' THEN 'Afternoon'
-        ELSE 'Evening'
-    END AS shift,
-    COUNT(transactions_id) AS number_of_orders
-FROM 
-    retail_sales
-GROUP BY 
-    CASE 
-        WHEN sale_time < '12:00:00' THEN 'Morning'
-        WHEN sale_time >= '12:00:00' AND sale_time < '18:00:00' THEN 'Afternoon'
-        ELSE 'Evening'
-    END;
+    shift,
+    COUNT(*) as total_orders    
+FROM hourly_sale
+GROUP BY shift
 
 	-- END OF PROJECT
   
