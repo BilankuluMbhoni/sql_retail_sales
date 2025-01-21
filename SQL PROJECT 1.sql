@@ -118,33 +118,20 @@ GROUP BY gender, category;
 --Q7 write a sql query to calculate the avarage sale for each month, find the best selling month in each year
 
 SELECT 
-    EXTRACT(YEAR FROM sale_date) AS year,
-    EXTRACT(MONTH FROM sale_date) AS month,
-    AVG(total_sale) AS average_sale
+       year,
+       month,
+    avg_sale
 FROM 
-    retail_sales
-GROUP BY 
-    year, month
-HAVING 
-    AVG(total_sale) = (
-        SELECT 
-            MAX(avg_monthly_sale)
-			
-        FROM (
-            SELECT 
-                EXTRACT(YEAR FROM sale_date) AS year,
-                EXTRACT(MONTH FROM sale_date) AS month,
-                AVG(total_sale) AS avg_monthly_sale
-            FROM 
-                retail_sales
-            GROUP BY 
-                year, month
-        ) AS monthly_sales
-        WHERE 
-            monthly_sales.year = year
-    )
-ORDER BY 
-    year, month;
+(    
+SELECT 
+    EXTRACT(YEAR FROM sale_date) as year,
+    EXTRACT(MONTH FROM sale_date) as month,
+    AVG(total_sale) as avg_sale,
+    RANK() OVER(PARTITION BY EXTRACT(YEAR FROM sale_date) ORDER BY AVG(total_sale) DESC) as rank
+FROM retail_sales
+GROUP BY 1, 2
+) as t1
+WHERE rank = 1
 
 -- Q.8 write a sql query to find the top 5 customers based on the highest total sales 
 
